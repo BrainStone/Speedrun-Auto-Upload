@@ -18,7 +18,7 @@ if __name__ == "__main__":
     latest_record_file = find_latest_record_file(SPLITS_DIR)
     print(f"Latest record file: {latest_record_file}")
 
-    personal_best = find_personal_best(latest_record_file)
+    personal_best, speedrun_category = find_personal_best(latest_record_file)
     print(f"Personal best: {personal_best}")
 
     timestamp_files = determine_timestamp_files(personal_best, VIDEOS_DIR)

@@ -1,10 +1,22 @@
 import datetime
 import os
+from dataclasses import dataclass
 from typing import Generator
 
 import pandas as pd
 import dask.dataframe as dd
 from livesplit_parser import LivesplitData
+
+
+@dataclass
+class SpeedrunCategory:
+    game: str
+    category: str
+    platform: str = 'PC'
+
+    @staticmethod
+    def from_livesplit_data(data: LivesplitData) -> 'SpeedrunCategory':
+        return SpeedrunCategory(data.game_name, data.category_name, data.platform_name)
 
 
 def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike:
@@ -14,7 +26,7 @@ def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike
          filenames), key=os.path.getmtime)
 
 
-def find_personal_best(lss_path: str | os.PathLike) -> pd.Series:
+def find_personal_best(lss_path: str | os.PathLike) -> tuple[pd.Series, SpeedrunCategory]:
     """Find the personal best record for a given .lss file."""
     split_data = LivesplitData(lss_path)
     all_runs: pd.DataFrame = split_data.attempt_info_df
@@ -23,7 +35,7 @@ def find_personal_best(lss_path: str | os.PathLike) -> pd.Series:
     if completed_runs.empty:
         raise ValueError("No completed runs found")
 
-    return completed_runs.loc[completed_runs['RealTime_Sec'].idxmin()]
+    return completed_runs.loc[completed_runs['RealTime_Sec'].idxmin()], SpeedrunCategory.from_livesplit_data(split_data)
 
 
 def determine_timestamp_files(personal_best: pd.Series, videos_dir: str | os.PathLike) -> list[str | os.PathLike]:
@@ -43,10 +55,6 @@ def determine_timestamp_files(personal_best: pd.Series, videos_dir: str | os.Pat
 
 def load_timestamps(timestamp_files: list[str | os.PathLike]) -> pd.DataFrame:
     """Load timestamps from the specified timestamp files."""
-    # timestamps = (pd.read_csv(file, sep=', ', parse_dates=['Date Time'], index_col='Recording Timestamp').dropna(subset=['Recording Timestamp']) for file in timestamp_files)
-    #
-    # merged_timestamps = pd.concat(timestamps)
-
     ddf = dd.read_csv(timestamp_files, sep=', ', parse_dates=['Date Time'], engine='python')
     ddf = ddf.set_index('Date Time', inplace=True)
     ddf = ddf.dropna(subset=['Recording Timestamp'])
