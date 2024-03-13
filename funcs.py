@@ -32,6 +32,13 @@ def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike
          filenames), key=os.path.getmtime)
 
 
+def format_seconds(seconds: float) -> str:
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    return f'{hours:02.0f}:{minutes:02.0f}:{seconds:02.2f}'
+
+
 def find_personal_best(lss_path: str | os.PathLike) -> tuple[pd.Series, SpeedrunCategory]:
     """Find the personal best record for a given .lss file."""
     split_data = LivesplitData(lss_path)
@@ -46,6 +53,7 @@ def find_personal_best(lss_path: str | os.PathLike) -> tuple[pd.Series, Speedrun
     local_tzname = get_local_timezone()
     personal_best['started'] = personal_best['started'].tz_localize('UTC').tz_convert(local_tzname).tz_localize(None)
     personal_best['ended'] = personal_best['ended'].tz_localize('UTC').tz_convert(local_tzname).tz_localize(None)
+    personal_best['RealTime_Formatted'] = format_seconds(personal_best['RealTime_Sec'])
 
     return personal_best, SpeedrunCategory.from_livesplit_data(split_data)
 
@@ -113,3 +121,23 @@ def determine_cut_data(timestamps: pd.DataFrame, personal_best: pd.Series) -> \
     end_timestamp = end_row['Recording Timestamp on File']
 
     return video_file, start_timestamp, end_timestamp
+
+
+def generate_record_video_path(record_videos_dir: str | os.PathLike, personal_best: pd.Series,
+                               speedrun_category: SpeedrunCategory) -> str | os.PathLike:
+    manged_time = personal_best['RealTime_Formatted'].replace(':', ';').replace('.', ',')
+    record_filename = f"{speedrun_category.game} - {speedrun_category.category} - {manged_time}.mkv"
+
+    os.makedirs(record_videos_dir, exist_ok=True)
+
+    return os.path.join(record_videos_dir, record_filename)
+
+
+def cut_video(record_video_path: str | os.PathLike, video_file: str, start_timestamp: str = None,
+              end_timestamp: str = None):
+    res = ffmpeg \
+        .input(video_file, ss=start_timestamp, to=end_timestamp) \
+        .output(record_video_path, codec='copy') \
+        .run()
+
+    pass
