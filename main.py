@@ -3,6 +3,7 @@
 import os
 
 from livesplit_parser import LivesplitData
+from pandas import Series, DataFrame
 
 ##############
 # Settings
@@ -23,16 +24,21 @@ def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike
          filenames), key=os.path.getmtime)
 
 
-def find_latest_record(lss_path: str | os.PathLike):
-    my_run = LivesplitData(lss_path)
+def find_personal_best(lss_path: str | os.PathLike) -> Series:
+    """Find the personal best record for a given .lss file."""
+    split_data = LivesplitData(lss_path)
+    all_runs: DataFrame = split_data.attempt_info_df
+    completed_runs = all_runs.loc[all_runs['RunCompleted']]
 
-    print('NUMBER OF ATTEMPTS:', my_run.num_attempts)
-    print('NUMBER OF COMPLETED ATTEMPTS:', my_run.num_completed_attempts)
-    print('PERCENTAGE OF RUNS COMPLETED:', my_run.percent_runs_completed)
-    print('YOUR ATTEMPT DATA\n:', my_run.attempt_info_df)
-    print('YOUR SPLIT DATA:\n', my_run.split_info_df)
+    if completed_runs.empty:
+        raise ValueError("No completed runs found")
+
+    return completed_runs.loc[completed_runs['RealTime_Sec'].idxmin()]
 
 
 if __name__ == "__main__":
     latest_record_file = find_latest_record_file(SPLITS_DIR)
-    find_latest_record(latest_record_file)
+    print(f"Latest record file: {latest_record_file}")
+
+    personal_best = find_personal_best(latest_record_file)
+    print(f"Personal best: {personal_best}")
