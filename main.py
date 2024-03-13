@@ -27,3 +27,5 @@ if __name__ == "__main__":
 
     timestamps = load_timestamps(timestamp_files, VIDEOS_DIR)
     print(f"Timestamps loaded:\n{timestamps}")
+
+    determine_cut_data(timestamps, personal_best)

@@ -20,6 +20,11 @@ class SpeedrunCategory:
         return SpeedrunCategory(data.game_name, data.category_name, data.platform_name)
 
 
+def get_local_timezone() -> str:
+    local_tz = datetime.datetime.now().astimezone().tzinfo
+    return local_tz.tzname(datetime.datetime.now())
+
+
 def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike:
     """Find the most recently modified file in a directory and its subdirectories."""
     return max(
@@ -36,7 +41,13 @@ def find_personal_best(lss_path: str | os.PathLike) -> tuple[pd.Series, Speedrun
     if completed_runs.empty:
         raise ValueError("No completed runs found")
 
-    return completed_runs.loc[completed_runs['RealTime_Sec'].idxmin()], SpeedrunCategory.from_livesplit_data(split_data)
+    personal_best = completed_runs.loc[completed_runs['RealTime_Sec'].idxmin()]
+    # Timestamps are in UTC, convert them to local time, because all file names are in local time
+    local_tzname = get_local_timezone()
+    personal_best['started'] = personal_best['started'].tz_localize('UTC').tz_convert(local_tzname).tz_localize(None)
+    personal_best['ended'] = personal_best['ended'].tz_localize('UTC').tz_convert(local_tzname).tz_localize(None)
+
+    return personal_best, SpeedrunCategory.from_livesplit_data(split_data)
 
 
 def determine_timestamp_files(personal_best: pd.Series, videos_dir: str | os.PathLike) -> list[str | os.PathLike]:
@@ -76,10 +87,9 @@ def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | 
 
         artifical_timestamps.extend([
             {'Date Time': pd.to_datetime(video_start_timestamp), 'Recording Filename': video,
-             'Recording Timestamp': None,
-             'Recording Timestamp on File': None},
-            {'Date Time': pd.to_datetime(video_end_timestamp), 'Recording Filename': video, 'Recording Timestamp': None,
-             'Recording Timestamp on File': None},
+             'Recording Timestamp': None, 'Recording Timestamp on File': None},
+            {'Date Time': pd.to_datetime(video_end_timestamp), 'Recording Filename': video,
+             'Recording Timestamp': None, 'Recording Timestamp on File': None},
         ])
 
     artifical_timestamps = pd.DataFrame(artifical_timestamps)
@@ -87,9 +97,19 @@ def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | 
 
     final_merged_timestamps = pd.concat([merged_timestamps, artifical_timestamps])
     final_merged_timestamps.sort_index(inplace=True)
+    final_merged_timestamps['Recording Filepath'] = \
+        final_merged_timestamps['Recording Filename'].apply(lambda file: os.path.join(videos_dir, file))
 
     return final_merged_timestamps
 
 
-def determine_cut_data(timestamps: pd.DataFrame, personal_best: pd.Series):
-    pass
+def determine_cut_data(timestamps: pd.DataFrame, personal_best: pd.Series) -> \
+        tuple[str | os.PathLike, str | None, str | None]:
+    start_row = timestamps.iloc[timestamps.index.searchsorted(personal_best['started']) - 1]
+    end_row = timestamps.iloc[timestamps.index.searchsorted(personal_best['ended'])]
+
+    video_file = start_row['Recording Filepath']
+    start_timestamp = start_row['Recording Timestamp on File']
+    end_timestamp = end_row['Recording Timestamp on File']
+
+    return video_file, start_timestamp, end_timestamp
