@@ -3,6 +3,7 @@ import os
 from typing import Generator
 
 import pandas as pd
+import dask.dataframe as dd
 from livesplit_parser import LivesplitData
 
 
@@ -42,9 +43,12 @@ def determine_timestamp_files(personal_best: pd.Series, videos_dir: str | os.Pat
 
 def load_timestamps(timestamp_files: list[str | os.PathLike]) -> pd.DataFrame:
     """Load timestamps from the specified timestamp files."""
-    timestamps = [pd.read_csv(file) for file in timestamp_files]
+    # timestamps = (pd.read_csv(file, sep=', ', parse_dates=['Date Time'], index_col='Recording Timestamp').dropna(subset=['Recording Timestamp']) for file in timestamp_files)
+    #
+    # merged_timestamps = pd.concat(timestamps)
 
-    merged_timestamps = pd.concat(timestamps)
-    merged_timestamps.reset_index(drop=True, inplace=True)
+    ddf = dd.read_csv(timestamp_files, sep=', ', parse_dates=['Date Time'], engine='python')
+    ddf = ddf.set_index('Date Time', inplace=True)
+    ddf = ddf.dropna(subset=['Recording Timestamp'])
 
-    return merged_timestamps
+    return ddf.compute()
