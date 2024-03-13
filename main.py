@@ -19,10 +19,11 @@ if __name__ == "__main__":
     print(f"Latest record file: {latest_record_file}")
 
     personal_best, speedrun_category = find_personal_best(latest_record_file)
-    print(f"Personal best: {personal_best}")
+    print(f"Personal best:\n{personal_best}")
+    print(f"Speedrun category: {speedrun_category}")
 
     timestamp_files = determine_timestamp_files(personal_best, VIDEOS_DIR)
     print(f"Timestamp files: {timestamp_files}")
 
     timestamps = load_timestamps(timestamp_files)
-    print(f"Timestamps loaded: {timestamps}")
+    print(f"Timestamps loaded:\n{timestamps}")
