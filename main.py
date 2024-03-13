@@ -25,5 +25,5 @@ if __name__ == "__main__":
     timestamp_files = determine_timestamp_files(personal_best, VIDEOS_DIR)
     print(f"Timestamp files: {timestamp_files}")
 
-    timestamps = load_timestamps(timestamp_files)
+    timestamps = load_timestamps(timestamp_files, VIDEOS_DIR)
     print(f"Timestamps loaded:\n{timestamps}")

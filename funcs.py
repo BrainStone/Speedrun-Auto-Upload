@@ -3,8 +3,9 @@ import os
 from dataclasses import dataclass
 from typing import Generator
 
-import pandas as pd
 import dask.dataframe as dd
+import ffmpeg
+import pandas as pd
 from livesplit_parser import LivesplitData
 
 
@@ -53,10 +54,42 @@ def determine_timestamp_files(personal_best: pd.Series, videos_dir: str | os.Pat
     return file_names
 
 
-def load_timestamps(timestamp_files: list[str | os.PathLike]) -> pd.DataFrame:
+def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | os.PathLike) -> pd.DataFrame:
     """Load timestamps from the specified timestamp files."""
-    ddf = dd.read_csv(timestamp_files, sep=', ', parse_dates=['Date Time'], engine='python')
+    ddf = dd.read_csv(timestamp_files, sep=', ',
+                      usecols=['Date Time', 'Recording Filename', 'Recording Timestamp', 'Recording Timestamp on File'],
+                      parse_dates=['Date Time'], engine='python')
     ddf = ddf.set_index('Date Time', inplace=True)
     ddf = ddf.dropna(subset=['Recording Timestamp'])
+    merged_timestamps = ddf.compute()
 
-    return ddf.compute()
+    artifical_timestamps = []
+
+    # Add artificial timestamps for the start and end of each file, in case we forgot to add a marker before the
+    # first run or a marker after the last run
+    for video in merged_timestamps['Recording Filename'].unique():
+        video_info = ffmpeg.probe(os.path.join(videos_dir, video))
+        video_duration = int(float(video_info['format']['duration']))
+
+        video_start_timestamp = datetime.datetime.strptime(video[:-4], '%Y-%m-%d_%H-%M-%S')
+        video_end_timestamp = video_start_timestamp + datetime.timedelta(seconds=video_duration)
+
+        artifical_timestamps.extend([
+            {'Date Time': pd.to_datetime(video_start_timestamp), 'Recording Filename': video,
+             'Recording Timestamp': None,
+             'Recording Timestamp on File': None},
+            {'Date Time': pd.to_datetime(video_end_timestamp), 'Recording Filename': video, 'Recording Timestamp': None,
+             'Recording Timestamp on File': None},
+        ])
+
+    artifical_timestamps = pd.DataFrame(artifical_timestamps)
+    artifical_timestamps.set_index('Date Time', inplace=True)
+
+    final_merged_timestamps = pd.concat([merged_timestamps, artifical_timestamps])
+    final_merged_timestamps.sort_index(inplace=True)
+
+    return final_merged_timestamps
+
+
+def determine_cut_data(timestamps: pd.DataFrame, personal_best: pd.Series):
+    pass
