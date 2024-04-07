@@ -1,0 +1,20 @@
+[project]
+name = "Speedrun-Auto-Upload"
+version = "0.1.0"
+description = "Automatically find the record run, extract the recording and upload the run"
+authors = [
+    {name = "BrainStone", email = "yannick@tedworld.de"},
+]
+dependencies = [
+    "livesplit-parser>=0.2.1",
+    "ffmpeg-python>=0.2.0",
+    "dask>=2024.4.1",
+    "dask-expr>=1.0.10",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "GPLv3"}
+
+
+[tool.pdm]
+distribution = false
