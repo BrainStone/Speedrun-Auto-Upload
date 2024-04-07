@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from funcs import *
+from .funcs import *
 
 ##############
 # Settings
