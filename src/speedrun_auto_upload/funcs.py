@@ -48,19 +48,19 @@ def find_personal_best(
     lss_path: str | os.PathLike,
 ) -> tuple[pd.Series, SpeedrunCategory]:
     """Find the personal best record for a given .lss file."""
-    split_data = LivesplitData(lss_path)
+    split_data = LivesplitData(lss_path, "GameTime")
     all_runs: pd.DataFrame = split_data.attempt_info_df
     completed_runs = all_runs.loc[all_runs["RunCompleted"]]
 
     if completed_runs.empty:
         raise ValueError("No completed runs found")
 
-    personal_best = completed_runs.loc[completed_runs["RealTime_Sec"].idxmin()]
+    personal_best = completed_runs.loc[completed_runs["GameTime_Sec"].idxmin()]
     # Timestamps are in UTC, convert them to local time, because all file names are in local time
     local_tzname = get_local_timezone()
     personal_best["started"] = personal_best["started"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
     personal_best["ended"] = personal_best["ended"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
-    personal_best["RealTime_Formatted"] = format_seconds(personal_best["RealTime_Sec"])
+    personal_best["GameTime_Formatted"] = format_seconds(personal_best["GameTime_Sec"])
 
     return personal_best, SpeedrunCategory.from_livesplit_data(split_data)
 
@@ -157,7 +157,7 @@ def generate_record_video_path(
     personal_best: pd.Series,
     speedrun_category: SpeedrunCategory,
 ) -> str | os.PathLike:
-    manged_time = personal_best["RealTime_Formatted"].replace(":", ";").replace(".", ",")
+    manged_time = personal_best["GameTime_Formatted"].replace(":", ";").replace(".", ",")
     record_filename = f"{speedrun_category.game} - {speedrun_category.category} - {manged_time}.mkv"
 
     os.makedirs(record_videos_dir, exist_ok=True)
