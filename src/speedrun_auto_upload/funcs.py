@@ -167,6 +167,4 @@ def cut_video(
     start_timestamp: str | None = None,
     end_timestamp: str | None = None,
 ):
-    res = ffmpeg.input(video_file).output(record_video_path, ss=start_timestamp, to=end_timestamp, codec="copy").run()
-
-    pass
+    ffmpeg.input(video_file, ss=start_timestamp, to=end_timestamp).output(record_video_path, codec="copy").run()
