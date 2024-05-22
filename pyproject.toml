@@ -6,7 +6,8 @@ authors = [
     {name = "BrainStone", email = "yannick@tedworld.de"},
 ]
 dependencies = [
-    "livesplit-parser>=0.2.1",
+    # "livesplit-parser>=0.2.1",
+    "livesplit-parser @ git+https://github.com/BrainStone/livesplit_parser.git@custom_release",
     "ffmpeg-python>=0.2.0",
     "dask>=2024.4.1",
     "dask-expr>=1.0.10",
