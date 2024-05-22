@@ -153,7 +153,8 @@ def generate_record_video_path(
     personal_best: pd.Series,
     speedrun_category: SpeedrunCategory,
 ) -> str | os.PathLike:
-    manged_time = personal_best["GameTime_Formatted"].replace(":", ";").replace(".", ",")
+    # Replace troublesome characters with similar looking ones
+    manged_time = personal_best["GameTime_Formatted"].replace(":", "\uA789").replace(".", "\u2024")
     record_filename = f"{speedrun_category.game} - {speedrun_category.category} - {manged_time}.mkv"
 
     os.makedirs(record_videos_dir, exist_ok=True)
