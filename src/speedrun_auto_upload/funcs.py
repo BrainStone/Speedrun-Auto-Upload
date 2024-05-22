@@ -6,6 +6,7 @@ from typing import Generator
 import dask.dataframe as dd
 import ffmpeg
 import pandas as pd
+import tzlocal
 from livesplit_parser import LivesplitData
 
 
@@ -18,11 +19,6 @@ class SpeedrunCategory:
     @staticmethod
     def from_livesplit_data(data: LivesplitData) -> "SpeedrunCategory":
         return SpeedrunCategory(data.game_name, data.category_name, data.platform_name)
-
-
-def get_local_timezone() -> str:
-    local_tz = datetime.datetime.now().astimezone().tzinfo
-    return local_tz.tzname(datetime.datetime.now())
 
 
 def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike:
@@ -41,7 +37,7 @@ def format_seconds(seconds: float) -> str:
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    return f"{hours:02.0f}:{minutes:02.0f}:{seconds:02.2f}"
+    return f"{hours:02.0f}:{minutes:02.0f}:{seconds:05.2f}"
 
 
 def find_personal_best(
@@ -57,7 +53,7 @@ def find_personal_best(
 
     personal_best = completed_runs.loc[completed_runs["GameTime_Sec"].idxmin()]
     # Timestamps are in UTC, convert them to local time, because all file names are in local time
-    local_tzname = get_local_timezone()
+    local_tzname = tzlocal.get_localzone().key
     personal_best["started"] = personal_best["started"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
     personal_best["ended"] = personal_best["ended"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
     personal_best["GameTime_Formatted"] = format_seconds(personal_best["GameTime_Sec"])
