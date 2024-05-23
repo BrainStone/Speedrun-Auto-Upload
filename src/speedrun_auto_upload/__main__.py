@@ -8,6 +8,7 @@ from .funcs import *
 
 SPLITS_DIR = "/home/yannick/LiveSplit/Splits/"
 VIDEOS_DIR = "/home/yannick/Videos/OBS/"
+SHORT_CATEGORY = True
 
 ##############
 # Main
@@ -18,7 +19,7 @@ if __name__ == "__main__":
     latest_record_file = find_latest_record_file(SPLITS_DIR)
     print(f"Latest record file: {latest_record_file}")
 
-    personal_best, speedrun_category = find_personal_best(latest_record_file)
+    personal_best, speedrun_category = find_personal_best(latest_record_file, SHORT_CATEGORY)
     print(f"Personal best:\n{personal_best}")
     print(f"Speedrun category: {speedrun_category}")
 

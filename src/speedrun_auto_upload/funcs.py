@@ -33,16 +33,18 @@ def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike
     )
 
 
-def format_seconds(seconds: float) -> str:
+def format_seconds(seconds: float, decimals: bool) -> str:
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    return f"{hours:02.0f}:{minutes:02.0f}:{seconds:05.2f}"
+    return (
+        f"{hours:02.0f}:{minutes:02.0f}:{seconds:05.2f}"
+        if decimals
+        else f"{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}"
+    )
 
 
-def find_personal_best(
-    lss_path: str | os.PathLike,
-) -> tuple[pd.Series, SpeedrunCategory]:
+def find_personal_best(lss_path: str | os.PathLike, short_category: bool) -> tuple[pd.Series, SpeedrunCategory]:
     """Find the personal best record for a given .lss file."""
     split_data = LivesplitData(lss_path, "GameTime")
     all_runs: pd.DataFrame = split_data.attempt_info_df
@@ -56,7 +58,7 @@ def find_personal_best(
     local_tzname = tzlocal.get_localzone().key
     personal_best["started"] = personal_best["started"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
     personal_best["ended"] = personal_best["ended"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
-    personal_best["GameTime_Formatted"] = format_seconds(personal_best["GameTime_Sec"])
+    personal_best["GameTime_Formatted"] = format_seconds(personal_best["GameTime_Sec"], short_category)
 
     return personal_best, SpeedrunCategory.from_livesplit_data(split_data)
 
