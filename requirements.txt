@@ -28,12 +28,12 @@ contourpy==1.2.1 \
 cycler==0.12.1 \
     --hash=sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30 \
     --hash=sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c
-dask==2024.4.1 \
-    --hash=sha256:6cd8eb03ddc8dc08d6ca5b167b8de559872bc51cc2b6587d0e9dc754ab19cdf0 \
-    --hash=sha256:cac5d28b9de7a7cfde46d6fbd8fa81f5654980d010b44d1dbe04dd13b5b63126
-dask-expr==1.0.10 \
-    --hash=sha256:3b937429097e01d1da86a43b6ce5b5ff1ab47eabe4dd0ca8bd734ace68feba0a \
-    --hash=sha256:8b0f8b23dd95713daf357762001b230783e5b6ddea748dedaf5a48b822cd585b
+dask==2024.5.1 \
+    --hash=sha256:af1cadd1fd1d1d44600ff5de43dd029e5668fdf87422131f4e3e3aa2a6a63555 \
+    --hash=sha256:e071fda67031c314569e37ca70b3e88bb30f1d91ff8ee4122b541845847cc264
+dask-expr==1.1.1 \
+    --hash=sha256:30acb27c19ef3f44681cddd46597395b2da976d426e050e684e2044ebe033f3a \
+    --hash=sha256:455842bff0795309f75f78f98d9be235210e01ad93da9b5a74f8cdaa594ab958
 datetime==5.5 \
     --hash=sha256:0abf6c51cb4ba7cee775ca46ccc727f3afdde463be28dbbe8803631fefd4a120 \
     --hash=sha256:21ec6331f87a7fcb57bd7c59e8a68bfffe6fcbf5acdbbc7b356d6a9a020191d3
@@ -89,7 +89,7 @@ kiwisolver==1.4.5 \
     --hash=sha256:e5d706eba36b4c4d5bc6c6377bb6568098765e990cfc21ee16d13963fab7b3e7 \
     --hash=sha256:f846c260f483d1fd217fe5ed7c173fb109efa6b1fc8381c8b7552c5781756192 \
     --hash=sha256:fd32ea360bcbb92d28933fc05ed09bffcb1704ba3fc7942e81db0fd4f81a7892
-livesplit-parser @ git+https://github.com/BrainStone/livesplit_parser.git@a43105538fb9aca95d1f5739250f51cec41b458d
+livesplit-parser @ git+https://github.com/BrainStone/livesplit_parser.git@248489a23b931c6b7b3938906bdb61addc193f00
 locket==1.0.0 \
     --hash=sha256:5c0d4c052a8bbbf750e056a8e65ccd309086f4f0f18a2eac306a8dfa4112a632 \
     --hash=sha256:b6c819a722f7b6bd955b80781788e4a66a55628b858d347536b7e81325a3a5e3

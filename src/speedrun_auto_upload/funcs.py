@@ -40,11 +40,11 @@ def format_seconds(seconds: float, decimals: bool) -> str:
 
     if decimals:
         # Round up to the next hundredth of a second
-        seconds = math.ceil(seconds * 100) / 100
+        seconds = math.floor(seconds * 100) / 100
         return f"{hours:02.0f}:{minutes:02.0f}:{seconds:05.2f}"
     else:
         # Round up to the next whole second
-        seconds = math.ceil(seconds)
+        seconds = math.floor(seconds)
         return f"{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}"
 
 
