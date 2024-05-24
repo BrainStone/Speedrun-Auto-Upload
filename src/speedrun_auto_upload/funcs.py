@@ -1,4 +1,5 @@
 import datetime
+import math
 import os
 from dataclasses import dataclass
 from typing import Generator
@@ -37,11 +38,14 @@ def format_seconds(seconds: float, decimals: bool) -> str:
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    return (
-        f"{hours:02.0f}:{minutes:02.0f}:{seconds:05.2f}"
-        if decimals
-        else f"{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}"
-    )
+    if decimals:
+        # Round up to the next hundredth of a second
+        seconds = math.ceil(seconds * 100) / 100
+        return f"{hours:02.0f}:{minutes:02.0f}:{seconds:05.2f}"
+    else:
+        # Round up to the next whole second
+        seconds = math.ceil(seconds)
+        return f"{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}"
 
 
 def find_personal_best(lss_path: str | os.PathLike, short_category: bool) -> tuple[pd.Series, SpeedrunCategory]:
