@@ -8,7 +8,7 @@ from .funcs import *
 
 SPLITS_DIR = "/home/yannick/LiveSplit/Splits/"
 VIDEOS_DIR = "/home/yannick/Videos/OBS/"
-SHORT_CATEGORY = True
+SHORT_CATEGORY = "auto"
 
 ##############
 # Main
