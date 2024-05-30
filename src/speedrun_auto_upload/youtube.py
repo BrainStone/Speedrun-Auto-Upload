@@ -3,10 +3,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Union
 
-import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
-import googleapiclient.http
+from google.auth.exceptions import RefreshError
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.http import MediaFileUpload, MediaUploadProgress
 from tqdm import tqdm
 
 
@@ -23,20 +26,56 @@ class YouTube:
 
     # Path to the client secrets JSON file downloaded from Google Cloud Console
     CLIENT_SECRETS_FILE = "client_secrets.json"
+    STORED_CREDENTIALS_FILE = ".stored_credentials.json"
 
     def __init__(self):
         self.youtube = self._get_authenticated_service()
 
     def _get_authenticated_service(self):
+        # The base dir where this module resides
         src_dir = Path(__file__).resolve().parent.parent
-        secrets_file = src_dir / YouTube.CLIENT_SECRETS_FILE
 
-        if not secrets_file.exists():
-            secrets_file = src_dir.parent / YouTube.CLIENT_SECRETS_FILE
+        # Try the module base dir, the one above and finally the CWD
+        for storage_dir in [src_dir, src_dir.parent, Path.cwd()]:
+            secrets_file = storage_dir / self.CLIENT_SECRETS_FILE
 
-        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(str(secrets_file), self.SCOPES)
-        credentials = flow.run_local_server(port=0)
+            if secrets_file.exists():
+                break
+        else:
+            raise RuntimeError(f"No client secrets file found")
+
+        # Set up the credentials file path
+        credentials_file = storage_dir / self.STORED_CREDENTIALS_FILE
+
+        # Load credentials from file if available
+        if credentials_file.exists():
+            credentials = Credentials.from_authorized_user_file(str(credentials_file))
+            # Check if the credentials are expired and refresh if possible
+            if credentials.expired and credentials.refresh_token:
+                try:
+                    credentials.refresh(Request())
+                except RefreshError:
+                    # If refresh fails, need to re-authenticate
+                    credentials = self._authenticate_and_save(secrets_file, credentials_file)
+        else:
+            # Authenticate and save credentials
+            credentials = self._authenticate_and_save(secrets_file, credentials_file)
+
         return googleapiclient.discovery.build(self.API_SERVICE_NAME, self.API_VERSION, credentials=credentials)
+
+    def _authenticate_and_save(self, secrets_file: Path, credentials_file: Path):
+        # Get authentication
+        flow = InstalledAppFlow.from_client_secrets_file(str(secrets_file), self.SCOPES)
+        credentials = flow.run_local_server(port=0)
+
+        # Save credentials to file
+        credentials_to_save = credentials.to_json()
+        with open(credentials_file, 'w') as f:
+            f.write(credentials_to_save)
+        # Ensure only we can read the file!
+        credentials_file.chmod(0o600)
+
+        return credentials
 
     def upload_video(
         self,
@@ -57,14 +96,16 @@ class YouTube:
         }
 
         # Upload the video (in 10 MiB chunks)
-        media = googleapiclient.http.MediaFileUpload(video_filename, chunksize=10 * 1024 * 1024, resumable=True)
+        #  10 MiB -> 5.03 MiB/s -> 15:08
+        # 100 MiB -> 5.10 MiB/s ->
+        media = MediaFileUpload(video_filename, chunksize=100 * 1024 * 1024, resumable=True)
         request = self.youtube.videos().insert(part="snippet,status", body=body, media_body=media)
 
         # Use tqdm to create a progress bar
         with tqdm(total=media.size(), desc="Uploading video", unit="B", unit_scale=True, unit_divisor=1024) as pbar:
             response = None
             while response is None:
-                status: googleapiclient.http.MediaUploadProgress
+                status: MediaUploadProgress
                 status, response = request.next_chunk()
                 if status:
                     pbar.update(status.resumable_progress - pbar.n)
@@ -82,4 +123,4 @@ class YouTube:
 
         # Call the YouTube Data API to add the video to the playlist
         request = self.youtube.playlistItems().insert(part="snippet", body=body)
-        response = request.execute()
+        request.execute()
