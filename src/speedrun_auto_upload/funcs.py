@@ -1,7 +1,7 @@
 import datetime
 import math
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Generator
 
 import dask.dataframe as dd
@@ -18,10 +18,11 @@ class SpeedrunCategory:
     game: str
     category: str
     platform: str = "PC"
+    variables: dict = field(default_factory=dict)
 
     @staticmethod
     def from_livesplit_data(data: LivesplitData) -> "SpeedrunCategory":
-        return SpeedrunCategory(data.game_name, data.category_name, data.platform_name)
+        return SpeedrunCategory(data.game_name, data.category_name, data.platform_name, data.variables)
 
 
 def find_latest_record_file(search_path: str | os.PathLike) -> str | os.PathLike:

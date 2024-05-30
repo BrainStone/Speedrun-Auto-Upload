@@ -396,10 +396,10 @@ files = [
 
 [[package]]
 name = "livesplit-parser"
-version = "0.2.1.5"
+version = "0.2.1.6"
 git = "https://github.com/BrainStone/livesplit_parser.git"
 ref = "custom_release"
-revision = "73dbfedeabab756625c367937c9f11836d4308f9"
+revision = "94f328ba3d894d576a594185c38d20a29ef6d38e"
 summary = "Parse LiveSplit data"
 groups = ["default"]
 dependencies = [
