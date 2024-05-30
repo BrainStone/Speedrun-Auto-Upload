@@ -186,7 +186,12 @@ def cut_video(
     start_timestamp: str | None = None,
     end_timestamp: str | None = None,
 ):
-    ffmpeg.input(video_file, ss=start_timestamp, to=end_timestamp).output(record_video_path, codec="copy").run()
+    (
+        ffmpeg.input(video_file, ss=start_timestamp, to=end_timestamp)
+        .output(record_video_path, codec="copy")
+        .overwrite_output()
+        .run()
+    )
 
 
 def upload_video(
