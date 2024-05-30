@@ -232,26 +232,32 @@ class YouTube:
                     credentials.refresh(Request())
                 except RefreshError:
                     # If refresh fails, need to re-authenticate
-                    credentials = self._authenticate_and_save(secrets_file, credentials_file)
+                    credentials = self._authenticate(secrets_file)
         else:
-            # Authenticate and save credentials
-            credentials = self._authenticate_and_save(secrets_file, credentials_file)
+            # Authenticate
+            credentials = self._authenticate(secrets_file)
+
+        # Save Credentials always
+        self._save_credentials(credentials, credentials_file)
 
         return googleapiclient.discovery.build(self.API_SERVICE_NAME, self.API_VERSION, credentials=credentials)
 
-    def _authenticate_and_save(self, secrets_file: Path, credentials_file: Path):
+    @classmethod
+    def _authenticate(cls, secrets_file: Path) -> Credentials:
         # Get authentication
-        flow = InstalledAppFlow.from_client_secrets_file(str(secrets_file), self.SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file(str(secrets_file), cls.SCOPES)
         credentials = flow.run_local_server(port=0)
 
+        return credentials
+
+    @staticmethod
+    def _save_credentials(credentials: Credentials, credentials_file: Path):
         # Save credentials to file
         credentials_to_save = credentials.to_json()
         with open(credentials_file, "w") as f:
             f.write(credentials_to_save)
         # Ensure only we can read the file!
         credentials_file.chmod(0o600)
-
-        return credentials
 
     def upload_video(
         self,
