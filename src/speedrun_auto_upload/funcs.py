@@ -63,11 +63,11 @@ def find_personal_best(
         _short_category = short_category
     else:
         if short_category == "auto":
-            _short_category = not str(split_data.layout_path).endswith('Coarse.lsl')
+            _short_category = not str(split_data.layout_path).endswith("Coarse.lsl")
         else:
-            raise ValueError(f"The value \"{short_category}\" is not supported, use True, False or \"auto\"")
+            raise ValueError(f'The value "{short_category}" is not supported, use True, False or "auto"')
 
-    personal_best = completed_runs.loc[completed_runs["GameTime_Sec"].idxmin()]
+    personal_best = completed_runs.loc[completed_runs["GameTime_Sec"].idxmin()].copy()
     # Timestamps are in UTC, convert them to local time, because all file names are in local time
     local_tzname = tzlocal.get_localzone().key
     personal_best["started"] = personal_best["started"].tz_localize("UTC").tz_convert(local_tzname).tz_localize(None)
@@ -170,8 +170,8 @@ def generate_record_video_path(
     speedrun_category: SpeedrunCategory,
 ) -> str | os.PathLike:
     # Replace troublesome characters with similar looking ones
-    manged_time = personal_best["GameTime_Formatted"].replace(":", "\uA789").replace(".", "\u2024")
-    record_filename = f"{speedrun_category.game} - {speedrun_category.category} - {manged_time}.mkv"
+    mangled_time = personal_best["GameTime_Formatted"].replace(":", "\uA789").replace(".", "\u2024")
+    record_filename = f"{speedrun_category.game} - {speedrun_category.category} - {mangled_time}.mkv"
 
     os.makedirs(record_videos_dir, exist_ok=True)
 
@@ -180,7 +180,7 @@ def generate_record_video_path(
 
 def cut_video(
     record_video_path: str | os.PathLike,
-    video_file: str,
+    video_file: str | os.PathLike,
     start_timestamp: str | None = None,
     end_timestamp: str | None = None,
 ):
