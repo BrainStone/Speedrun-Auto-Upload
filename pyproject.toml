@@ -12,6 +12,11 @@ dependencies = [
     "dask>=2024.4.1",
     "dask-expr>=1.0.10",
     "tzlocal>=5.2",
+    "google-auth>=2.29.0",
+    "google-auth-oauthlib>=1.2.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-api-python-client>=2.131.0",
+    "tqdm>=4.66.4",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"

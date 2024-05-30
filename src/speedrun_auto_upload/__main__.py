@@ -9,6 +9,7 @@ from .funcs import *
 SPLITS_DIR = "/home/yannick/LiveSplit/Splits/"
 VIDEOS_DIR = "/home/yannick/Videos/OBS/"
 SHORT_CATEGORY = "auto"
+PLAYLIST_ID = "PLEewwzacolAKkvx-4sc0M83_V-Y-v705B"
 
 ##############
 # Main
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     timestamps = load_timestamps(timestamp_files, VIDEOS_DIR)
     # print(f"Timestamps loaded:\n{timestamps}")
 
-    cut_data = determine_cut_data(timestamps, personal_best)
+    video_file, start_timestamp, end_timestamp = determine_cut_data(timestamps, personal_best)
     # print(f"Cut data determined:\n{cut_data}")
 
     record_video_file = generate_record_video_path(
@@ -37,5 +38,8 @@ if __name__ == "__main__":
     )
     print(f"Record video file: {record_video_file}")
 
-    cut_video(record_video_file, *cut_data)
+    cut_video(record_video_file, video_file, start_timestamp, end_timestamp)
     # Nothing to print
+
+    upload_video(record_video_file, personal_best, speedrun_category, PLAYLIST_ID)
+    # Nothing to print; video ID is printed already

@@ -10,6 +10,8 @@ import pandas as pd
 import tzlocal
 from livesplit_parser import LivesplitData
 
+from speedrun_auto_upload.youtube import YouTube
+
 
 @dataclass
 class SpeedrunCategory:
@@ -185,3 +187,32 @@ def cut_video(
     end_timestamp: str | None = None,
 ):
     ffmpeg.input(video_file, ss=start_timestamp, to=end_timestamp).output(record_video_path, codec="copy").run()
+
+
+def upload_video(
+    record_video_path: str | os.PathLike,
+    personal_best: pd.Series,
+    speedrun_category: SpeedrunCategory,
+    playlist_id: str | None = None,
+) -> str:
+    # Shorten the time by removing leading zeros and colons
+    short_time = personal_best["GameTime_Formatted"].lstrip("0:")
+
+    youtube = YouTube()
+    video_id = youtube.upload_video(
+        record_video_path,
+        f"{speedrun_category.game} - {speedrun_category.category} - PB {short_time}",
+        f"""My current PB for the {speedrun_category.game} - {speedrun_category.category} speedrun category.
+
+Category: https://www.speedrun.com/xxx
+Run: https://www.speedrun.com/xxx""",
+        ["speedrun", speedrun_category.game, speedrun_category.category],
+        20,  # -> Gaming
+        YouTube.PrivacyStatus.PUBLIC,
+        False,
+    )
+
+    if playlist_id is not None:
+        youtube.add_video_to_playlist(video_id, playlist_id)
+
+    return video_id
