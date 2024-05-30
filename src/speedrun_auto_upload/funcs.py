@@ -10,6 +10,7 @@ import pandas as pd
 import tzlocal
 from livesplit_parser import LivesplitData
 
+from speedrun_auto_upload import splits_io
 from speedrun_auto_upload.youtube import YouTube
 
 
@@ -222,3 +223,8 @@ Run: https://www.speedrun.com/xxx""",
         youtube.add_video_to_playlist(video_id, playlist_id)
 
     return video_id
+
+
+def upload_splits(splits_file: str | os.PathLike):
+    # TODO: Oauth magic
+    return splits_io.upload_splits(splits_file)

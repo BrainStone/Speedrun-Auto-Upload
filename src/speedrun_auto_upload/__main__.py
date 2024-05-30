@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .funcs import *
+from speedrun_auto_upload.funcs import *
 
 ##############
 # Settings
@@ -43,3 +43,8 @@ if __name__ == "__main__":
 
     upload_video(record_video_file, personal_best, speedrun_category, PLAYLIST_ID)
     # Nothing to print; video ID is printed already
+
+    public_run_url, claim_run_url = upload_splits(latest_record_file)
+    if claim_run_url is not None:
+        print(f"Run was uploaded anonymously, claim it here: {claim_run_url}")
+    print(f"Public run URL: {public_run_url}")

@@ -1,9 +1,12 @@
+import os
 from http import HTTPStatus
 
 import requests
 
+# TODO: Oauth magic
 
-def upload_splits(file_path, api_token=None):
+
+def upload_splits(file_path: str | os.PathLike, api_token: str | None = None):
     # Step 1: Reserve the upload
     create_run_url = "https://splits.io/api/v4/runs"
     headers = {}
@@ -14,10 +17,10 @@ def upload_splits(file_path, api_token=None):
     create_response = requests.post(create_run_url, headers=headers)
 
     if create_response.status_code != HTTPStatus.CREATED:
-        print("Failed to create a new run.")
-        print("Status code:", create_response.status_code)
-        print("Response:", create_response.text)
-        return
+        raise requests.exceptions.HTTPError(
+            f"Failed to create a new run. Status code: {create_response.status_code}. Response: {create_response.text}",
+            request=create_response.request,
+        )
 
     run_info = create_response.json()
     presigned_request = run_info["presigned_request"]
@@ -30,11 +33,12 @@ def upload_splits(file_path, api_token=None):
         files = {"file": file}
         upload_response = requests.request(s3_method, s3_url, data=s3_fields, files=files)
 
-    if upload_response.status_code == HTTPStatus.NO_CONTENT:
-        print("Upload successful!")
-        print("Run ID:", run_info["id"])
-        print("Claim URI:", run_info["uris"]["claim_uri"])
-    else:
-        print("Upload failed.")
-        print("Status code:", upload_response.status_code)
-        print("Response:", upload_response.text)
+    if upload_response.status_code != HTTPStatus.NO_CONTENT:
+        raise requests.exceptions.HTTPError(
+            f"Upload failed. Status code: {upload_response.status_code}. Response: {upload_response.text}",
+            request=create_response.request,
+        )
+
+    uris = run_info["uris"]
+
+    return uris["public_uri"], uris["claim_uri"]
