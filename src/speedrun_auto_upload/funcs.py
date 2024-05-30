@@ -115,7 +115,7 @@ def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | 
     ddf = ddf.dropna(subset=["Recording Timestamp"])
     merged_timestamps = ddf.compute()
 
-    artifical_timestamps = []
+    artificial_timestamps = []
 
     # Add artificial timestamps for the start and end of each file, in case we forgot to add a marker before the
     # first run or a marker after the last run
@@ -126,7 +126,7 @@ def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | 
         video_start_timestamp = datetime.datetime.strptime(video[:-4], "%Y-%m-%d_%H-%M-%S")
         video_end_timestamp = video_start_timestamp + datetime.timedelta(seconds=video_duration)
 
-        artifical_timestamps.extend(
+        artificial_timestamps.extend(
             [
                 {
                     "Date Time": pd.to_datetime(video_start_timestamp),
@@ -143,10 +143,10 @@ def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | 
             ]
         )
 
-    artifical_timestamps = pd.DataFrame(artifical_timestamps)
-    artifical_timestamps.set_index("Date Time", inplace=True)
+    artificial_timestamps = pd.DataFrame(artificial_timestamps)
+    artificial_timestamps.set_index("Date Time", inplace=True)
 
-    final_merged_timestamps = pd.concat([merged_timestamps, artifical_timestamps])
+    final_merged_timestamps = pd.concat([merged_timestamps, artificial_timestamps])
     final_merged_timestamps.sort_index(inplace=True)
     final_merged_timestamps["Recording Filepath"] = final_merged_timestamps["Recording Filename"].apply(
         lambda file: os.path.join(videos_dir, file)
