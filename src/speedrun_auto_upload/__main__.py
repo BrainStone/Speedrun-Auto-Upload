@@ -41,10 +41,8 @@ if __name__ == "__main__":
     cut_video(record_video_file, video_file, start_timestamp, end_timestamp)
     # Nothing to print
 
-    upload_video(record_video_file, personal_best, speedrun_category, PLAYLIST_ID)
-    # Nothing to print; video ID is printed already
+    video_id = upload_video(record_video_file, personal_best, speedrun_category, PLAYLIST_ID)
+    print(f"Video URL: https://youtu.be/{video_id}")
 
-    public_run_url, claim_run_url = upload_splits(latest_record_file)
-    if claim_run_url is not None:
-        print(f"Run was uploaded anonymously, claim it here: {claim_run_url}")
-    print(f"Public run URL: {public_run_url}")
+    public_run_url = upload_splits(latest_record_file)
+    print(f"Splits.io URL: {public_run_url}")

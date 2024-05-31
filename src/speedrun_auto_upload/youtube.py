@@ -290,7 +290,6 @@ class YouTube:
         media.close()
 
         print("Upload complete!")
-        print(f"Video URL: https://www.youtube.com/watch?v={response['id']}")
 
         return response["id"]
 

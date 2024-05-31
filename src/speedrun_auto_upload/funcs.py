@@ -1,6 +1,7 @@
 import datetime
 import math
 import os
+import webbrowser
 from dataclasses import dataclass, field
 from typing import Generator
 
@@ -225,6 +226,14 @@ Run: https://www.speedrun.com/xxx""",
     return video_id
 
 
-def upload_splits(splits_file: str | os.PathLike):
+def upload_splits(splits_file: str | os.PathLike) -> str:
     # TODO: Oauth magic
-    return splits_io.upload_splits(splits_file)
+    public_run_url, claim_run_url = splits_io.upload_splits(splits_file)
+
+    if claim_run_url is not None:
+        if not webbrowser.open(claim_run_url, new=2, autoraise=False):
+            print(
+                f"Run was uploaded anonymously and we couldn't open the URL in your browser, claim it here: {claim_run_url}"
+            )
+
+    return public_run_url
