@@ -121,7 +121,12 @@ def load_timestamps(timestamp_files: list[str | os.PathLike], videos_dir: str | 
     # Add artificial timestamps for the start and end of each file, in case we forgot to add a marker before the
     # first run or a marker after the last run
     for video in merged_timestamps["Recording Filename"].unique():
-        video_info = ffmpeg.probe(os.path.join(videos_dir, video))
+        video_path = os.path.join(videos_dir, video)
+
+        if not os.path.exists(video_path):
+            continue
+
+        video_info = ffmpeg.probe(video_path)
         video_duration = int(float(video_info["format"]["duration"]))
 
         video_start_timestamp = datetime.datetime.strptime(video[:-4], "%Y-%m-%d_%H-%M-%S")
